@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  chat-mongo:
+    image: 'mongo'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongoadmin
+      MONGO_INITDB_ROOT_PASSWORD: secret
+
+  chat-service:
+    build:
+      ./spring-mongo-reactive-chat
+    environment:
+      spring_data_mongodb_host: 'chat-mongo'
+      shutdown_on_db_connection_error: 'false'
+    ports:
+      - 8080:8080
+    depends_on:
+      - chat-mongo
+    links:
+      - chat-mongo:chat-mongo
+
+  chat-front:
+    build:
+      context: ./primeng-chat-client
+      args:
+        key_store_pass: spring
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - chat-service
